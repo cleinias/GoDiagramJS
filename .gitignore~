@@ -1,0 +1,12 @@
+.sass-cache
+.DS_Store
+
+# All backup files
+.md~
+.md#
+.php~
+.php#
+.yaml#
+.yaml~
+.txt~
+.twig~
