@@ -1,5 +1,5 @@
 /*
-    SLtxt2SVG.js -- create a SVG image from Sensei's Library diagram format
+    sltxt2svg.js -- create an SVG image from Sensei's Library diagram format
     Copyright (C) 2001-2004 by
     Arno Hollosi <ahollosi@xmp.net>, Morten Pahle <morten@pahle.org.uk>
     
@@ -158,7 +158,7 @@ class GoDiagram
             {
                 this.diagram += (match[1] + "\n");
             }
-             // Now looking for links
+             // Now looking for links and adding them to the map
 	    if (match = line.match(/^\$\$\s*\[(.*)\|(.*)\]/))
  	    {
  	 	var anchor = match[1].trim();
@@ -168,118 +168,128 @@ class GoDiagram
                  }
  	    }
             }
-        }
+
+	this._initBoardAndDimensions();
+
+	if (this.startrow > this.endrow	// check if diagram is at least
+	||  this.startcol > this.endcol	// 1x1
+	||  this.endrow < 0 || this.endcol < 0
+	||  this.img_width < this.font_width
+	||  this.img_height < this.font_height)
+	    this.diagram = NULL;
     }
 
-// 	this._initBoardAndDimensions();
+    /*
+    * Parse diagram and calculate board dimensions
+    */
+    _initBoardAndDimensions()
+    {
+        var diag;
+	// remove unnecessary chars, replace border chars
+	diag = this.diagram.replace(/[-|+]/g, '%');
+	diag = diag.replace(/[ \t\r\$]/g, '');
+	diag = diag.replace(/\n+/g,' \n'); 
+        // trim(preg_replace("/\n+/", " \n", $diag));
+	this.rows = diag.split("\n");
 
-// 	if (this.startrow > this.endrow	// check if diagram is at least
-// 	||  this.startcol > this.endcol	// 1x1
-// 	||  this.endrow < 0 || this.endcol < 0
-// 	||  this.img_width < this.font_width
-// 	||  this.img_height < this.font_height)
-// 	    this.diagram = NULL;
-//     }
+	// find borders
+	this.startrow = 0;
+	this.startcol = 0;
+	this.endrow = this.rows.length - 1;
 
+	// top border
+	if (this.rows[0][1] == '%')
+	{
+	    this.startrow++;
+	    this.topborder = 1;
+	}
+	else
+	    this.topborder = 0;
 
-//     /**
-//     * Parse diagram and calculate board dimensions
-//     */
-//     function _initBoardAndDimensions()
-//     {
-// 	// remove unnecessary chars, replace border chars
-// 	$diag = preg_replace("/[-|+]/", "%", this.diagram);
-// 	$diag = preg_replace("/[ \t\r\$]/", '', $diag);
-// 	$diag = trim(preg_replace("/\n+/", " \n", $diag));
-// 	this.rows = explode("\n", "$diag ");
+	// bottom border
+	if (this.rows[this.endrow][1] == '%')
+	{
+	    this.endrow--;
+	    this.bottomborder = 1;
+	}
+	else
+	    this.bottomborder = 0;
 
-// 	// find borders
-// 	this.startrow = 0;
-// 	this.startcol = 0;
-// 	this.endrow = count(this.rows) - 1;
+	// left border
+	if (this.rows[this.startrow][0] == '%')
+	{
+	    this.startcol++;
+	    this.leftborder = 1;
+	}
+	else
+	    this.leftborder = 0;
 
-// 	// top border
-// 	if (this.rows[0][1] == '%')
-// 	{
-// 	    this.startrow++;
-// 	    this.topborder = 1;
-// 	}
-// 	else
-// 	    this.topborder = 0;
-
-// 	// bottom border
-// 	if (this.rows[this.endrow][1] == '%')
-// 	{
-// 	    this.endrow--;
-// 	    this.bottomborder = 1;
-// 	}
-// 	else
-// 	    this.bottomborder = 0;
-
-// 	// left border
-// 	if (this.rows[this.startrow][0] == '%')
-// 	{
-// 	    this.startcol++;
-// 	    this.leftborder = 1;
-// 	}
-// 	else
-// 	    this.leftborder = 0;
-
-// 	// right border
-// 	this.endcol = strlen(this.rows[this.startrow]) - 2;
-// 	if (this.rows[this.endrow][this.endcol] == '%')
-// 	{
-// 	    this.endcol--;
-// 	    this.rightborder = 1;
-// 	}
-// 	else
-// 	    this.rightborder = 0;
+	// right border
+	this.endcol = this.rows[this.startrow].length - 2;
+	if (this.rows[this.endrow][this.endcol] == '%')
+	{
+	    this.endcol--;
+	    this.rightborder = 1;
+	}
+	else
+	    this.rightborder = 0;
 
 
-// 	// init dimensions
-// 	this.font = 4;
-// 	this.font_height = ImageFontHeight(this.font);
-// 	this.font_width = ImageFontWidth(this.font);
-// 	$diameter = floor(sqrt(pow(this.font_height,2)+pow(this.font_width,2)))+6;
-// 	this.radius = $diameter/2;
-// 	this.img_width = $diameter * (1+this.endcol-this.startcol) + 4;
-// 	this.img_height = $diameter * (1+this.endrow-this.startrow) + 4;
-// 	this.offset_x = 2;
-// 	this.offset_y = 2;
+    //     // init dimensions
+    //     this.font = 4;
+    //     this.font_height = ImageFontHeight(this.font);
+    //     this.font_width = ImageFontWidth(this.font);
+    //     $diameter = floor(sqrt(pow(this.font_height,2)+pow(this.font_width,2)))+6;
+    //     this.radius = $diameter/2;
+    //     this.img_width = $diameter * (1+this.endcol-this.startcol) + 4;
+    //     this.img_height = $diameter * (1+this.endrow-this.startrow) + 4;
+    //     this.offset_x = 2;
+    //     this.offset_y = 2;
 
-// 	// calculate image size
-// 	if (this.coordinates)
-// 	{
-// 	    if ((this.bottomborder || this.topborder)
-// 	    &&  (this.leftborder || this.rightborder))
-// 	    {
-// 		$x = this.font_width*2+4;
-// 		$y = this.font_height+2;
-//    		this.img_width += $x;
-// 		this.offset_x += $x;
-// 		this.img_height += $y;
-// 		this.offset_y += $y;
-// 	    }
-// 	    else {
-//                // cannot determine X *and* Y coordinates (missing borders)
-//                this.coordinates = 0;
-// 	    }
-// 	}
-//     }
+    //     // calculate image size
+    // //     if (this.coordinates)
+    //     {
+    //         if ((this.bottomborder || this.topborder)
+    //         &&  (this.leftborder || this.rightborder))
+    //         {
+    //     	$x = this.font_width*2+4;
+    //     	$y = this.font_height+2;
+    //     	this.img_width += $x;
+    //     	this.offset_x += $x;
+    //     	this.img_height += $y;
+    //     	this.offset_y += $y;
+    //         }
+    //         else {
+    //            // cannot determine X *and* Y coordinates (missing borders)
+    //            this.coordinates = 0;
+    //         }
+    //     }
+        }
+        
+    _htmlspecialchar(text)
+    {
+        var map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    getTitle()
+    {
+	return this._htmlspecialchars(this.title);
+    }
 
 
-//     function getTitle()
-//     {
-// 	return htmlspecialchars(this.title);
-//     }
-
-
-//     /**
-//     * get HTML code for client side image map
-//     * $URI ... URI of map
-//     */
-//     function getLinkMap($mapName)
-//     {
+    getLinkMap(mapName)
+    /* get HTML code for client side image map
+    * $URI ... URI of map
+    */
+    {
 // 	if (!count(this.linkmap))
 // 	    return NULL;
 
@@ -300,18 +310,88 @@ class GoDiagram
 // 	}
 // 	$html .= "</map>\n";
 // 	return $html;
-//     }
+    }
 
 
-//     function _getLinkArea($xpos, $ypos)
-//     {
+    getLinkArea(xpos, ypos)
+    {
 // 	$x = ($xpos - this.startcol)*(this.radius*2) + this.offset_x;
 // 	$y = ($ypos - this.startrow)*(this.radius*2) + this.offset_y;
 // 	return array($x, $y, $x + this.radius*2 - 1,
 // 			     $y + this.radius*2 - 1);
-//     }
+    }
 
 
+    createSVG()
+     /* Create the SVG image based on ASCII diagram
+     * returns an SVG object (an XML text file)
+     */
+    {
+        // 1. Create the image
+
+        // 2. Set up the colors
+
+        // 3. Create the background
+
+        // 4. Draw the coordinates
+
+        // 5. Output stones, numbers etc. for each row
+    }
+
+    drawstone(x, y, colorRing, colorInside)
+    /* x and y are relative to image
+    * colorRing, colorInside are stone colors (edge and body resp.)
+    */
+    {
+        
+    }
+
+    markIntersection(x, y, radius, color, type)
+    /* used to draw board markup and hoshi marks.
+    * x and y are relative to image 
+    * type one of W,B,C for circle or S,@,# for square
+    */
+    {
+        
+    }
+
+    getIntersectionType(x, y)
+    /* x,y are the relative to this.rows (0,0)=UL
+    * Return value one of these:
+    * 'M', 'U', 'L', 'R', 'B', 'UL', 'BL', 'UR', 'BR'
+    */
+    {
+        
+    }
+
+    drawIntersection(x, y, black, type)
+    /* x and y are relative to image
+    * type can be 'M', 'U', 'L', 'R', 'B', 'UL', 'BL', 'UR', 'BR'
+    */
+    {
+        
+    }
+
+    drawCoordinates(color)
+    {
+        
+    }
+
+    drawGobanBorder(color, color2, open, white)
+    {
+        
+    }
+
+    createSGF()
+    /* Creates SGF based on ASCII diagram and title
+    * returns SGF as string or FALSE (if board not a square)
+    */
+    {
+        
+    }
+
+
+    
 //     /**
 //     * Creates PNG graphic based on ASCII diagram
 //     * returns image object
@@ -775,6 +855,10 @@ class GoDiagram
 
 // */
 
+
+} // GoDiag CLASS DEFINITION ENDS HERE
+
+    
 // /*
 // * Demo function generating board position of ear-reddening move
 // * including a link to Sensei's Library
