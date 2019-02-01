@@ -348,7 +348,7 @@ class GoDiagram
             + '" height = "' +
             this.imageHeight +
             '">\n';
-        imgSvg["closeSvgTag"] = '<\svg>\n';
+        imgSvg["closeSvgTag"] = '</svg>\n';
         
         // 2. Set up the colors
         var black = "rgb(0, 0, 0)";
@@ -364,7 +364,7 @@ class GoDiagram
         // 3. Create the background
         imgSvg["background"] = '<rect  x="0" y="0" width="' + 
              this.imageWidth + '" height = "' + this.imageHeight +
-             '" fill = "'+ goban + '">\n';  
+             '" fill = "'+ goban + '"/>\n';  
 
         // 4. Draw the coordinates
         if (this.coordinates)
@@ -377,17 +377,30 @@ class GoDiagram
         // 6. Assemble the complete  svg element and return it
         var svgElement = imgSvg["openSvgTag"] +
                          imgSvg["background"] +
+                         this.drawstone(70,70,black,black) +
+                         this.drawstone(80,80,black,white) +            
                          imgSvg["closeSvgTag"];
             
         return svgElement;
     }
 
     drawstone(x, y, colorRing, colorInside)
-    /* x and y are relative to image
+    /* Return Svg element for a stone  
+    * x and y are relative to image
     * colorRing, colorInside are stone colors (edge and body resp.)
     */
     {
-        
+        var stone = "";
+        stone += '<circle cx="' +
+            x + '" cy = "'  +
+            y + '" r = "'  +
+            this.radius*2  +
+            '" stroke = "' +
+            colorRing    +
+            '" fill = "'   +
+            colorInside      +
+            '" />\n';
+        return stone;
     }
 
     markIntersection(x, y, radius, color, type)
