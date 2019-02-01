@@ -82,8 +82,8 @@
 *
 * - to get the SVG image call diagram.createSVG()
 *
-* - image size and width can be read from diagram.img_width and
-*   diagram.img_height
+* - image size and width can be read from diagram.imageWidth and
+*   diagram.imageHeight
 *
 * - for the client side link map call diagram.getLinkmap()
 *
@@ -110,8 +110,8 @@ class GoDiagram
      font_height;
      font_width;
      radius;	        // based on font size
-     img_width;
-     img_height;
+     imageWidth;
+     imageHeight;
      offset_x;
      offset_y;
 
@@ -179,8 +179,8 @@ class GoDiagram
 	if (this.startrow > this.endrow	// check if diagram is at least
 	||  this.startcol > this.endcol	// 1x1
 	||  this.endrow < 0 || this.endcol < 0
-	||  this.img_width < this.font_width
-	||  this.img_height < this.font_height)
+	||  this.imageWidth < this.font_width
+	||  this.imageHeight < this.font_height)
 	    this.diagram = NULL;
     }
 
@@ -240,9 +240,9 @@ class GoDiagram
 	    this.rightborder = 0;
 
 
-        // init dimensions
+        // Initialize image size.
         // The goban is a matrix of rectangular cells, which can be empty,
-        // contain a stone, or a symbol. A cell minimum size's must accommodate
+        // contain a stone, or a symbol. A cell's minimum size must accommodate
         // a symbol in the font used, whose height and width are stored
         // in an instance variable and default to h:16 and w:8 (equivalent to
         // the px heights and width of a font size 4).
@@ -251,8 +251,8 @@ class GoDiagram
         var diameter = Math.floor(Math.sqrt(this.fontSize["h"]**2 + this.fontSize["w"]**2));
         this.radius = diameter/2;
         this.diameter = diameter;
-        this.img_width = diameter * (1+this.endcol-this.startcol) + 4;
-        this.img_height = diameter * (1+this.endrow-this.startrow) + 4;
+        this.imageWidth = diameter * (1+this.endcol-this.startcol) + 4;
+        this.imageHeight = diameter * (1+this.endrow-this.startrow) + 4;
         this.offset_x = 2;
         this.offset_y = 2;
 
@@ -265,9 +265,9 @@ class GoDiagram
              {
          	var x = this.fontSize["w"]*2+4;
          	var y = this.fontSize["h"]+2;
-         	this.img_width += x;
+         	this.imageWidth += x;
          	this.offset_x += x;
-         	this.img_height += y;
+         	this.imageHeight += y;
          	this.offset_y += y;
              }
              else {
@@ -341,15 +341,45 @@ class GoDiagram
      * returns an SVG object (an XML text file)
      */
     {
-        // 1. Create the image
-
+        var imgSvg = {}; 
+        // 1. Create the SVG image element
+        imgSvg["openSvgTag"] = '<svg width = "'
+            + this.imageWidth
+            + '" height = "' +
+            this.imageHeight +
+            '">\n';
+        imgSvg["closeSvgTag"] = '<\svg>\n';
+        
         // 2. Set up the colors
+        var black = "rgb(0, 0, 0)";
+	var white ="rgb(255, 255, 255)";
+	var red   ="rgb(255, 55, 55)";
+	var goban ="rgb(242, 176, 109)";
+	var gobanborder ="rgb(150, 110, 65)";
+	var gobanborder2 ="rgb(210, 145, 80)";
+	var gobanopen ="rgb(255, 210, 140)";
+	var link  ="rgb(202, 106, 69)";
+
 
         // 3. Create the background
+        imgSvg["background"] = '<rect  x="0" y="0" width="' + 
+             this.imageWidth + '" height = "' + this.imageHeight +
+             '" fill = "'+ goban + '">\n';  
 
         // 4. Draw the coordinates
+        if (this.coordinates)
+        {
+            imgSvg["coordinates"] = this.drawCoordinates(black);
+        }
 
         // 5. Output stones, numbers etc. for each row
+
+        // 6. Assemble the complete  svg element and return it
+        var svgElement = imgSvg["openSvgTag"] +
+                         imgSvg["background"] +
+                         imgSvg["closeSvgTag"];
+            
+        return svgElement;
     }
 
     drawstone(x, y, colorRing, colorInside)
@@ -387,6 +417,8 @@ class GoDiagram
     }
 
     drawCoordinates(color)
+    // Returns one or more svg elements
+    // with the Goban coordinates
     {
         
     }
@@ -413,7 +445,7 @@ class GoDiagram
 //     function &createPNG()
 //     {
 // 	// create image
-// 	$img = ImageCreate(this.img_width, this.img_height);
+// 	$img = ImageCreate(this.imageWidth, this.imageHeight);
 // 	this.image =& $img;
 
 // 	// set up colors
@@ -683,42 +715,42 @@ class GoDiagram
 // 	if (this.topborder)
 // 	{
 // 	    ImageSetPixel(this.image, 0, 0, $white);
-// 	    ImageSetPixel(this.image, this.img_width-1, 0, $white);
-// 	    ImageLine(this.image, $xl1, 0, this.img_width-1-$xr1, 0, $color);
-// 	    ImageLine(this.image, $xl2, 1, this.img_width-1-$xr2, 1, $color2);
+// 	    ImageSetPixel(this.image, this.imageWidth-1, 0, $white);
+// 	    ImageLine(this.image, $xl1, 0, this.imageWidth-1-$xr1, 0, $color);
+// 	    ImageLine(this.image, $xl2, 1, this.imageWidth-1-$xr2, 1, $color2);
 // 	}
 // 	else
-//             ImageLine(this.image, 0, 0, this.img_width-1, 0, $open);
+//             ImageLine(this.image, 0, 0, this.imageWidth-1, 0, $open);
 
 // 	if (this.bottomborder)
 // 	{
-// 	    ImageSetPixel(this.image, 0, this.img_height-1, $white);
-// 	    ImageSetPixel(this.image, this.img_width-1, this.img_height-1, $white);
-// 	    ImageLine(this.image, $xl1, this.img_height-1, this.img_width-1-$xr1, this.img_height-1, $color);
-// 	    ImageLine(this.image, $xl2, this.img_height-2, this.img_width-1-$xr2, this.img_height-2, $color2);
+// 	    ImageSetPixel(this.image, 0, this.imageHeight-1, $white);
+// 	    ImageSetPixel(this.image, this.imageWidth-1, this.imageHeight-1, $white);
+// 	    ImageLine(this.image, $xl1, this.imageHeight-1, this.imageWidth-1-$xr1, this.imageHeight-1, $color);
+// 	    ImageLine(this.image, $xl2, this.imageHeight-2, this.imageWidth-1-$xr2, this.imageHeight-2, $color2);
 // 	}
 // 	else
-// 	    ImageLine(this.image, 0, this.img_height-1, this.img_width-1, this.img_height-1, $open);
+// 	    ImageLine(this.image, 0, this.imageHeight-1, this.imageWidth-1, this.imageHeight-1, $open);
 
 // 	if (this.leftborder)
 // 	{
 // 	    ImageSetPixel(this.image, 0, 0, $white);
-// 	    ImageSetPixel(this.image, 0, this.img_height-1, $white);
-// 	    ImageLine(this.image, 0, $yt1, 0, this.img_height-1-$yb1, $color);
-// 	    ImageLine(this.image, 1, $yt2, 1, this.img_height-1-$yb2, $color2);
+// 	    ImageSetPixel(this.image, 0, this.imageHeight-1, $white);
+// 	    ImageLine(this.image, 0, $yt1, 0, this.imageHeight-1-$yb1, $color);
+// 	    ImageLine(this.image, 1, $yt2, 1, this.imageHeight-1-$yb2, $color2);
 // 	}
 // 	else
-// 	    ImageLine(this.image, 0, 0, 0, this.img_height-1, $open);
+// 	    ImageLine(this.image, 0, 0, 0, this.imageHeight-1, $open);
 
 // 	if (this.rightborder)
 // 	{
-// 	    ImageSetPixel(this.image, this.img_width-1, 0, $white);
-// 	    ImageSetPixel(this.image, this.img_width-1, this.img_height-1, $white);
-// 	    ImageLine(this.image, this.img_width-1, $yt1, this.img_width-1, this.img_height-1-$yb1, $color);
-// 	    ImageLine(this.image, this.img_width-2, $yt2, this.img_width-2, this.img_height-1-$yb2, $color2);
+// 	    ImageSetPixel(this.image, this.imageWidth-1, 0, $white);
+// 	    ImageSetPixel(this.image, this.imageWidth-1, this.imageHeight-1, $white);
+// 	    ImageLine(this.image, this.imageWidth-1, $yt1, this.imageWidth-1, this.imageHeight-1-$yb1, $color);
+// 	    ImageLine(this.image, this.imageWidth-2, $yt2, this.imageWidth-2, this.imageHeight-1-$yb2, $color2);
 // 	}
 // 	else
-// 	    ImageLine(this.image, this.img_width-1, 0, this.img_width-1, this.img_height-1, $open);
+// 	    ImageLine(this.image, this.imageWidth-1, 0, this.imageWidth-1, this.imageHeight-1, $open);
 //     }
 
 
