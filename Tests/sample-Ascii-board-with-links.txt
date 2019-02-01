@@ -1,0 +1,12 @@
+$$ Links in diagrams - examples
+$$  --------------
+$$ | . . . . . . .
+$$ | . C . . . . .
+$$ | . . . 1 6 . .
+$$ | . . 5 4 . . .
+$$ | . . 3 2 . . .
+$$ | . . a . . C .
+$$ | . . . . . . .
+$$ [2|NadareJoseki]
+$$ [a|http://gtl.xmp.net/members/info?p_key=349&pseudo=dada]
+$$ [C|#1]
