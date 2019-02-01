@@ -132,9 +132,14 @@ class GoDiagram
     * Constructor of class GoDiagram
     * input_diagram is the diagram in SL's diagram format
     * sets this.diagram to NULL if invalid diagram found
+    * 
+    * fontSize are the height and width in pixels of a box for 
+    * HTML standard fontsize 4
     */
-    constructor(input_diagram)
-    {   var match;
+    constructor(input_diagram,fontSize={"h":16,"w":8})
+    {
+        this.fontSize = fontSize;
+        var match;
 	this.content = input_diagram.split("\n");
 	// Parse the parameters of the first line
         
@@ -169,7 +174,7 @@ class GoDiagram
  	    }
             }
 
-	this._initBoardAndDimensions();
+	this.initBoardAndDimensions();
 
 	if (this.startrow > this.endrow	// check if diagram is at least
 	||  this.startcol > this.endcol	// 1x1
@@ -182,7 +187,7 @@ class GoDiagram
     /*
     * Parse diagram and calculate board dimensions
     */
-    _initBoardAndDimensions()
+    initBoardAndDimensions()
     {
         var diag;
 	// remove unnecessary chars, replace border chars
@@ -235,38 +240,44 @@ class GoDiagram
 	    this.rightborder = 0;
 
 
-    //     // init dimensions
-    //     this.font = 4;
-    //     this.font_height = ImageFontHeight(this.font);
-    //     this.font_width = ImageFontWidth(this.font);
-    //     $diameter = floor(sqrt(pow(this.font_height,2)+pow(this.font_width,2)))+6;
-    //     this.radius = $diameter/2;
-    //     this.img_width = $diameter * (1+this.endcol-this.startcol) + 4;
-    //     this.img_height = $diameter * (1+this.endrow-this.startrow) + 4;
-    //     this.offset_x = 2;
-    //     this.offset_y = 2;
+        // init dimensions
+        // The goban is a matrix of rectangular cells, which can be empty,
+        // contain a stone, or a symbol. A cell minimum size's must accommodate
+        // a symbol in the font used, whose height and width are stored
+        // in an instance variable and default to h:16 and w:8 (equivalent to
+        // the px heights and width of a font size 4).
+        // The image's size adds room for two cells on all sides for the borders 
 
-    //     // calculate image size
-    // //     if (this.coordinates)
-    //     {
-    //         if ((this.bottomborder || this.topborder)
-    //         &&  (this.leftborder || this.rightborder))
-    //         {
-    //     	$x = this.font_width*2+4;
-    //     	$y = this.font_height+2;
-    //     	this.img_width += $x;
-    //     	this.offset_x += $x;
-    //     	this.img_height += $y;
-    //     	this.offset_y += $y;
-    //         }
-    //         else {
-    //            // cannot determine X *and* Y coordinates (missing borders)
-    //            this.coordinates = 0;
-    //         }
-    //     }
+        var diameter = Math.floor(Math.sqrt(this.fontSize["h"]**2 + this.fontSize["w"]**2));
+        this.radius = diameter/2;
+        this.diameter = diameter;
+        this.img_width = diameter * (1+this.endcol-this.startcol) + 4;
+        this.img_height = diameter * (1+this.endrow-this.startrow) + 4;
+        this.offset_x = 2;
+        this.offset_y = 2;
+
+        // adjust image size if coordinates are needed 
+         if (this.coordinates)
+         {
+             if ((this.bottomborder || this.topborder)
+                 &&
+                 (this.leftborder || this.rightborder))
+             {
+         	var x = this.fontSize["w"]*2+4;
+         	var y = this.fontSize["h"]+2;
+         	this.img_width += x;
+         	this.offset_x += x;
+         	this.img_height += y;
+         	this.offset_y += y;
+             }
+             else {
+                // cannot determine X *and* Y coordinates (missing borders)
+                this.coordinates = 0;
+             }
+         }
         }
         
-    _htmlspecialchar(text)
+    htmlspecialchars(text)
     {
         var map = {
             '&': '&amp;',
@@ -281,7 +292,7 @@ class GoDiagram
 
     getTitle()
     {
-	return this._htmlspecialchars(this.title);
+	return this.htmlspecialchars(this.title);
     }
 
 
@@ -290,35 +301,38 @@ class GoDiagram
     * $URI ... URI of map
     */
     {
-// 	if (!count(this.linkmap))
-// 	    return NULL;
-
-// 	$html .= "<map name='$mapName'>\n";
-// 	for ($ypos=this.startrow; $ypos<=this.endrow; $ypos++)
-// 	{
-// 	    for ($xpos=this.startcol; $xpos<=this.endcol; $xpos++)
-// 	    {
-// 		$curchar = this.rows[$ypos][$xpos];
-// 		if (isset(this.linkmap[$curchar]))
-// 		{
-// 		    list($x, $y, $xx, $yy) = this._getLinkArea($xpos, $ypos);
-// 		    $destination = this.linkmap[$curchar];
-// 		    $title = htmlspecialchars($destination);
-// 		    $html .= "<area shape='rect' coords='$x,$y,$xx,$yy' href='$destination' title='$title'>\n";
-// 		}
-// 	    }
-// 	}
-// 	$html .= "</map>\n";
-// 	return $html;
+        var os = require("os");
+ 	if (this.linkmap.length == 0)
+        {
+ 	    return null;
+        }
+ 	var html = "";
+        html += "<map name=" + mapName+ ">"+os.EOL;
+ 	for (var ypos=this.startrow; ypos<=this.endrow; ypos++)
+ 	{
+ 	    for (var xpos=this.startcol; xpos<=this.endcol; xpos++)
+ 	    {
+ 		var curchar = this.rows[ypos][xpos];
+ 		if (typeof this.linkmap[curchar] !== 'undefined' && this.linkmap[curchar] !== null)
+ 		{
+ 		    var coords =  this.getLinkArea(xpos, ypos);
+ 		    var destination = this.linkmap[curchar];
+ 		    var title = this.htmlspecialchars(destination);
+ 		    html += ("<area shape='rect' coords='" + coords + "' href='" + destination + "' title='"+ title + "'>"+os.EOL);
+ 		}
+ 	    }
+ 	}
+ 	html += "</map>"+os.EOL;
+ 	return html;
     }
 
 
     getLinkArea(xpos, ypos)
+    // Return the origin and destination coordinates in pixel of the cell at xpos,ypos
     {
-// 	$x = ($xpos - this.startcol)*(this.radius*2) + this.offset_x;
-// 	$y = ($ypos - this.startrow)*(this.radius*2) + this.offset_y;
-// 	return array($x, $y, $x + this.radius*2 - 1,
-// 			     $y + this.radius*2 - 1);
+ 	var x = (xpos - this.startcol)*(this.radius*2) + this.offset_x;
+ 	var y = (ypos - this.startrow)*(this.radius*2) + this.offset_y;
+ 	return [x, y, x + this.radius*2 - 1, y + this.radius*2 - 1];
     }
 
 
