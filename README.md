@@ -28,8 +28,10 @@ The diagram's element may include markup (circles, squares, letters, etc.) and e
 All the basic components (stones, lines, goban, etc.) are identified by classes and can be styled with an external CSS sheet. 
 A skeletal CSS file is provide as proof of concept. 
 
-Copyright (C) 2001-2004 for the original sl2png.php library by  Arno Hollosi <ahollosi@xmp.net> and Morten Pahle 
-<morten@pahle.org.uk>.
-Copyright (C) 2019 of the Javascript code by Stefano Franchi 2019 <stefano.franchi@gmail.com>
+Original sl2png.php library:  Copyright (C) 2001-2004 Arno Hollosi (<ahollosi@xmp.net>) and Morten Pahle 
+(<morten@pahle.org.uk>).
+
+
+Javascript code: Copyright (C) 2019 Stefano Franchi 2019 (<stefano.franchi@gmail.com>).
 
 Released under the GPL v. 3.0 or later.
