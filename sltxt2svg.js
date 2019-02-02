@@ -359,6 +359,7 @@ class GoDiagram
 	var gobanborder2 ="rgb(210, 145, 80)";
 	var gobanopen ="rgb(255, 210, 140)";
 	var link  ="rgb(202, 106, 69)";
+        var markupColor = '';
 
 
         // 3. Create the background
@@ -378,11 +379,11 @@ class GoDiagram
         // 6. Draw stones, numbers etc. for each row and column
        	if (this.firstColor == 'W')
 	{
-	    var evencolour = black;
-	    var oddcolour = white;
+	    var evencolor = black;
+	    var oddcolor = white;
 	} else {
-	    evencolour = white;
-	    oddcolour = black;
+	    evencolor = white;
+	    oddcolor = black;
 	}
         //main drawing routine starts here
         // imgSvg['svgDiagram']  is the string collecting
@@ -413,7 +414,6 @@ class GoDiagram
 		//    list($x, $y, $xx, $yy) = $this->_getLinkArea($xpos, $ypos);
 		//    ImageFilledRectangle($img, $x, $y, $xx, $yy, $link);
 		// }
-		console.log('curchar --> ' + curchar); 
                 switch(curchar)
                 {
                     // if X, B, or  # we have a black stone (marked or not)
@@ -452,6 +452,25 @@ class GoDiagram
                     // any other markup (including & / ( ) ! etc.)
                     default:
                     // FIXME: default clause still to do
+                    if (curchar % 2 == 1)   //odd numbers
+                    {
+                        svgItem += this.drawStone(x,y,black,oddcolor);
+                        markupColor = evencolor;
+                    }
+                    else if (curchar % 2 == 0 | curchar ==0)  // even numbers
+                    {
+                        svgItem += this.drawStone(x,y,black, evencolor);
+                        markupColor = oddcolor;
+                        if (curchar == '0') {curchar = '10';}
+                    }
+                    else if (curchar >= 'a' && curchar <= 'z')
+                    {
+                    // FIXME: still to do see php code    
+                    //     type = this.getIntersectionType(xpos,ypos);
+                    //     svgItem += this.drawIntersection(,,black,type);
+
+                    }
+                    else // unknown character
                     break;                    
                 }    // end of switch curchar
                 console.log('this is the svgItem at x,y: ' + xpos + ', ' + ypos + '--> ' +  svgItem);
