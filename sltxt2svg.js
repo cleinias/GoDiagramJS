@@ -498,20 +498,44 @@ class GoDiagram
     }
 
     getIntersectionType(x, y)
-    /* x,y are the relative to this.rows (0,0)=UL
-    * Return value one of these:
-    * 'M', 'U', 'L', 'R', 'B', 'UL', 'BL', 'UR', 'BR'
+    /* Check if the intersection is on an edge or ina corner
+    * Returns one of these values, or their combination:
+    * U(pper), L(eft), R(ight), B(ottom)
     */
     {
-        
+        var type = '';
+        if (this.rows[y-1][x] == "%") {type = 'U';} // Upper row
+        if (this.rows[y+1][x] == "%") {type += 'B';} // Bottom row
+        if (this.rows[y][x-1] == "%") {type += 'L';} // Left column 
+        if (this.rows[y][x+1] == "%") {type += 'R';} // Right column
+        return type;
     }
 
-    drawIntersection(x, y, black, type)
+    drawIntersection(x, y, color, type)
     /* x and y are relative to image
-    * type can be 'M', 'U', 'L', 'R', 'B', 'UL', 'BL', 'UR', 'BR'
+    * type can be 'U', 'L', 'R', 'B', 'UL', 'BL', 'UR', 'BR' 
+    * an empty type rpresents a middle intersection 
     */
     {
-        return '';
+        var intersectionElements = '';
+        var svgElem;
+        if (!type.includes('U'))
+        {svgElem = '<line x1="' + x + '" y1="' + (y - this.radius) + '" x2="' + x + '" y2="' + y + '" stroke="' + color + '" />\n';
+         intersectionElements += svgElem;
+        }
+        if (!type.includes('B'))
+        {svgElem = '<line x1="' + x + '" y1="' + (y + this.radius) + '" x2="' + x + '" y2="' + y + '" stroke="' + color + '" />\n';
+         intersectionElements += svgElem;
+        }
+        if (!type.includes('L'))
+        {svgElem = '<line x1="' + (x-this.radius) + '" y1="' + y + '" x2="' + x + '" y2="' + y + '" stroke="' + color + '" />\n';
+         intersectionElements += svgElem;
+        }
+        if (!type.includes('R'))
+        {svgElem = '<line x1="' + (x+this.radius) + '" y1="' + y + '" x2="' + x + '" y2="' + y + '" stroke="' + color + '" />\n';
+         intersectionElements += svgElem;
+        }
+        return intersectionElements;
     }
 
     drawCoordinates(color)
