@@ -1,7 +1,7 @@
 # GoDiagramJS
 A small Javascript library to convert an Ascii representation of a Go (Baduk|Weiqi) diagram into an SVG drawing.
 
-ASCII representation:
+Example: ASCII representation:
 ````
 $$c Nadare joseki
 $$  --------------
@@ -13,7 +13,11 @@ $$ | . . 3 2 . . .
 $$ | . . . . . . .
 $$ | . . . . . . .
 ````
+
+And a bitmap rendered version:
+
 ![Sample_board-rendered](Tests/sample-board-rendered.png)
+
 GoDiagramsJS is a straight port to Javascript of sltxt2png.php, the PHP tool Arno Hollosi and Morten Pahle created for 
 their Go site  [Sensei Library](https://senseis.xmp.net/?HowDiagramsWork).
 The only major difference is in the output: instead of a bitmap image, GoDiagramsJS produces an SVG drawing embedded 
