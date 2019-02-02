@@ -489,22 +489,66 @@ class GoDiagram
     }
 
     markIntersection(x, y, radius, color, type)
-    /* used to draw board markup and hoshi marks.
-    * x and y are relative to image 
-    * type one of W,B,C for circle or S,@,# for square
+    /* Draws board markup and hoshi marks.
+    * x and y are the center of the diagram's cell
+    * type is one of W,B,C for circle or S,@,# for square
     */
     {
-        return '';
+        var intersectionElements = '';
+        var svgElem;
+        switch(type)
+        {
+            case ('W'):
+            case ('B'):
+            case ('C'):
+            intersectionElements += '<circle cx="' +
+            x + '" cy = "'  +
+            y + '" r = "'  +
+            (radius - 2)  +
+            '" stroke = "' +
+            color +
+            '" fill = "none"'   +
+                '" />\n';
+            intersectionElements += '<circle cx="' +
+            x + '" cy = "'  +
+            y + '" r = "'  +
+            (radius - 1)  +
+            '" stroke = "' +
+            color +
+            '" fill = "none"'   +
+                '" />\n';
+            intersectionElements += '<circle cx="' +
+            x + '" cy = "'  +
+            y + '" r = "'  +
+            radius  +
+            '" stroke = "' +
+            color +
+            '" fill = "none"'   +
+                '" />\n';
+            break;
+
+            case ('S'):
+            case ('@'):
+            case ('#'):
+            //FIXME: Draw square
+            intersectionElements += ''; //FIXME see php code
+            break;
+
+            case (','):
+            //FIXME: Draw hoshi as filled circle
+            intersectionElements += ''; //FIXME see php code            
+        }
+        return intersectionElements ;
     }
 
     getIntersectionType(x, y)
     /* Check if the intersection is on an edge or ina corner
-    * Returns one of these values, or their combination:
+    * Returns one of these values, or their combination (for corners):
     * U(pper), L(eft), R(ight), B(ottom)
     */
     {
         var type = '';
-        if (this.rows[y-1][x] == "%") {type = 'U';} // Upper row
+        if (this.rows[y-1][x] == "%") {type = 'U';}  // Upper row
         if (this.rows[y+1][x] == "%") {type += 'B';} // Bottom row
         if (this.rows[y][x-1] == "%") {type += 'L';} // Left column 
         if (this.rows[y][x+1] == "%") {type += 'R';} // Right column
@@ -512,9 +556,9 @@ class GoDiagram
     }
 
     drawIntersection(x, y, color, type)
-    /* x and y are relative to image
+    /* x and y are the coordinates of the center of the cell
     * type can be 'U', 'L', 'R', 'B', 'UL', 'BL', 'UR', 'BR' 
-    * an empty type rpresents a middle intersection 
+    * an empty type represents a middle intersection 
     */
     {
         var intersectionElements = '';
