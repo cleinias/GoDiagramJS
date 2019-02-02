@@ -385,9 +385,9 @@ class GoDiagram
 	    oddcolour = black;
 	}
         //main drawing routine starts here
+        imgSvg['svgDiagram'] = '';     
         for (var ypos = this.startrow; ypos <= this.endrow; ypos++)
-        { // svgDiagram is the string collecting all the svg elements for all the cells in the diagram
-            var svgDiagram = '';     
+        { // imgSvg['svgDiagram']  is the string collecting all the svg elements for all the cells in the diagram
             // Get the ordinate of the element to draw
             var elementY = (ypos - this.startrow) * (this.radius *2) +
                 this.radius + this.offset_y;
@@ -411,6 +411,7 @@ class GoDiagram
 		//    list($x, $y, $xx, $yy) = $this->_getLinkArea($xpos, $ypos);
 		//    ImageFilledRectangle($img, $x, $y, $xx, $yy, $link);
 		// }
+		console.log('curchar --> ' + curchar); 
                 switch(curchar)
                 {
                     // if X, B, or  # we have a black stone (marked or not)
@@ -451,15 +452,16 @@ class GoDiagram
                     // FIXME: default clause still to do
                     break;                    
                 }    // end of switch curchar
-                console.log('this is the svgItem ' +  svgItem);
-                svgDiagram += svgItem;
+                console.log('this is the svgItem at x,y: ' + xpos + ', ' + ypos + '--> ' +  svgItem);
+                imgSvg['svgDiagram'] += svgItem;
+                console.log('this is the svgDiagram at x,y: ' + xpos + ', ' + ypos + '--> '   +  imgSvg['svgDiagram']);
             }        // end of xpos loop
         }            // end of ypos loop
 
         // 7. Assemble the complete  svg element and return it
         var svgElement = imgSvg["openSvgTag"] +
                          imgSvg["background"] +
-                         svgDiagram+
+                         imgSvg['svgDiagram'] +
                          imgSvg["closeSvgTag"];
             
         return svgElement;
@@ -469,7 +471,7 @@ class GoDiagram
     /* Return Svg element for a stone  
     * x and y are relative to image
     * colorRing, colorInside are stone colors (edge and body resp.)
-    */
+    */ 
     {
         var stone = "";
         stone += '<circle cx="' +
@@ -490,7 +492,7 @@ class GoDiagram
     * type one of W,B,C for circle or S,@,# for square
     */
     {
-        
+        return '';
     }
 
     getIntersectionType(x, y)
@@ -507,18 +509,19 @@ class GoDiagram
     * type can be 'M', 'U', 'L', 'R', 'B', 'UL', 'BL', 'UR', 'BR'
     */
     {
-        
+        return '';
     }
 
     drawCoordinates(color)
     // Returns one or more svg elements
     // with the Goban coordinates
     {
-        
+        return '';
     }
 
     drawGobanBorder(color, color2, open, white)
     {
+	return '';
         
     }
 
