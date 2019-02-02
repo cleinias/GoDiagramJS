@@ -385,9 +385,11 @@ class GoDiagram
 	    oddcolour = black;
 	}
         //main drawing routine starts here
+        // imgSvg['svgDiagram']  is the string collecting
+        //  all the svg elements for all the cells in the diagram
         imgSvg['svgDiagram'] = '';     
         for (var ypos = this.startrow; ypos <= this.endrow; ypos++)
-        { // imgSvg['svgDiagram']  is the string collecting all the svg elements for all the cells in the diagram
+        {
             // Get the ordinate of the element to draw
             var elementY = (ypos - this.startrow) * (this.radius *2) +
                 this.radius + this.offset_y;
@@ -418,7 +420,7 @@ class GoDiagram
                     case ('X'):
                     case ('B'):
                     case ('#'):
-                        svgItem += this.drawstone(elementX,elementY,black,black);
+                        svgItem += this.drawStone(elementX,elementY,black,black);
                         if (curchar !== 'X')
                         {
                              svgItem += this.markIntersection(elementX,elementY, this.radius, red, curchar);
@@ -428,7 +430,7 @@ class GoDiagram
                     case ('O'):
                     case ('W'):
                     case ('@'):
-                    svgItem += this.drawstone(elementX,elementY,black,white);
+                    svgItem += this.drawStone(elementX,elementY,black,white);
                     if (curchar !== 'O')
                     {
                         svgItem += this.markIntersection(elementX,elementY,this.radius,red,curchar);                       }
@@ -467,7 +469,7 @@ class GoDiagram
         return svgElement;
     }
 
-    drawstone(x, y, colorRing, colorInside)
+    drawStone(x, y, colorRing, colorInside)
     /* Return Svg element for a stone  
     * x and y are relative to image
     * colorRing, colorInside are stone colors (edge and body resp.)
@@ -477,7 +479,7 @@ class GoDiagram
         stone += '<circle cx="' +
             x + '" cy = "'  +
             y + '" r = "'  +
-            this.radius*2  +
+            this.radius  +
             '" stroke = "' +
             colorRing    +
             '" fill = "'   +
