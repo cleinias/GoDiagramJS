@@ -6,7 +6,7 @@ their Go site  [Sensei Library|https://senseis.xmp.net/?HowDiagramsWork].
 The only major difference is in the output: instead of a bitmap image, GoDiagramsJS produces an SVG drawing embedded 
 in an <svg> </svg> element ready for inclusion in HTML code.
 
-All the diagram's bsic components (stones, lines, goban, etc.) are identified by classes and can be styled with an external CSS sheet. 
+All the basic components (stones, lines, goban, etc.) are identified by classes and can be styled with an external CSS sheet. 
 A skeletal CSS file is provide as proof of concept. 
 
 Copyright (C) 2001-2004 for the original sl2png.php library by  Arno Hollosi <ahollosi@xmp.net> and Morten Pahle 
