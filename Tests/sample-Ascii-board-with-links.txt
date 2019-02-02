@@ -1,4 +1,4 @@
-$$ Links in diagrams - examples
+$$c Links in diagrams - examples
 $$  --------------
 $$ | . . . . . . .
 $$ | . C . . . . .
