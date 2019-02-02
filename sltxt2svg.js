@@ -372,13 +372,94 @@ class GoDiagram
             imgSvg["coordinates"] = this.drawCoordinates(black);
         }
 
-        // 5. Output stones, numbers etc. for each row
+        // 5. Draw Goban border
+        this.drawGobanBorder(gobanborder,gobanborder2, gobanopen, white);
 
-        // 6. Assemble the complete  svg element and return it
+        // 6. Draw stones, numbers etc. for each row and column
+       	if (this.firstColor == 'W')
+	{
+	    var evencolour = black;
+	    var oddcolour = white;
+	} else {
+	    evencolour = white;
+	    oddcolour = black;
+	}
+        //main drawing routine starts here
+        for (var ypos = this.startrow; ypos <= this.endrow; ypos++)
+        { // svgDiagram is the string collecting all the svg elements for all the cells in the diagram
+            var svgDiagram = '';     
+            // Get the ordinate of the element to draw
+            var elementY = (ypos - this.startrow) * (this.radius *2) +
+                this.radius + this.offset_y;
+            //for each character in the row
+            for (var xpos = this.startcol; xpos <= this.endcol; xpos++ )
+            {
+                // svgItem contains one or more svg elements
+                //(circles, intersection, marks, colored areas, etc.)
+                // with the drawing code for each  cell in the diagram
+                var svgItem = '';
+                // get the absciss of the element to draw
+                var elementX = (xpos - this.startcol) * (this.radius *2) +
+                    this.radius + this.offset_x;
+                // Get the character
+                var curchar = this.rows[ypos][xpos];
+
+                // TO DO, linked areas:
+		// // is this a linked area? if so, paint with link color
+		// if (isset($this->linkmap[$curchar]))
+		// {
+		//    list($x, $y, $xx, $yy) = $this->_getLinkArea($xpos, $ypos);
+		//    ImageFilledRectangle($img, $x, $y, $xx, $yy, $link);
+		// }
+                switch(curchar)
+                {
+                    // if X, B, or  # we have a black stone (marked or not)
+                    case ('X'):
+                    case ('B'):
+                    case ('#'):
+                        svgItem += this.drawstone(elementX,elementY,black,black);
+                        if (curchar !== 'X')
+                        {
+                             svgItem += this.markIntersection(elementX,elementY, this.radius, red, curchar);
+                        }
+                        break;
+                    // if O, W, or @ we have a white stone, marked or unmarked
+                    case ('O'):
+                    case ('W'):
+                    case ('@'):
+                    svgItem += this.drawstone(elementX,elementY,black,white);
+                    if (curchar !== 'O')
+                    {
+                        svgItem += this.markIntersection(elementX,elementY,this.radius,red,curchar);                       }
+                    break;
+                    // if . , C or S we have EMPTY intersections possibly with hoshi, circle or square
+                    case ('.'): // empty intersection, check location
+                                // (edge, corner)
+                    case (','):
+                    case ('C'):
+                    case ('S'):
+                    var type = this.getIntersectionType(xpos,ypos);
+                    svgItem += this.drawIntersection(elementX,elementY,black,type);
+                    if (curchar !== '.')
+                    {
+                        var col = (curchar == ',') ? black : red;
+                        svgItem += this.markIntersection(elementX,elementY,this.radius,col,curchar);
+                    }
+                    break;
+                    // any other markup (including & / ( ) ! etc.)
+                    default:
+                    // FIXME: default clause still to do
+                    break;                    
+                }    // end of switch curchar
+                console.log('this is the svgItem ' +  svgItem);
+                svgDiagram += svgItem;
+            }        // end of xpos loop
+        }            // end of ypos loop
+
+        // 7. Assemble the complete  svg element and return it
         var svgElement = imgSvg["openSvgTag"] +
                          imgSvg["background"] +
-                         this.drawstone(70,70,black,black) +
-                         this.drawstone(80,80,black,white) +            
+                         svgDiagram+
                          imgSvg["closeSvgTag"];
             
         return svgElement;
