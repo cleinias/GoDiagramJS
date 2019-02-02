@@ -471,8 +471,8 @@ class GoDiagram
 
     drawStone(x, y, colorRing, colorInside)
     /* Return Svg element for a stone  
-    * x and y are relative to image
-    * colorRing, colorInside are stone colors (edge and body resp.)
+    *  x and y are relative to image
+    *  colorRing, colorInside are stone colors (edge and body resp.)
     */ 
     {
         var stone = "";
@@ -504,39 +504,51 @@ class GoDiagram
             intersectionElements += '<circle cx="' +
             x + '" cy = "'  +
             y + '" r = "'  +
+            (radius - 3)  +
+            '" stroke = "' +
+            color +
+            '" fill = "none"'   +
+                '" />\n';
+            intersectionElements += '<circle cx="' +
+            x + '" cy = "'  +
+            y + '" r = "'  +
             (radius - 2)  +
             '" stroke = "' +
             color +
             '" fill = "none"'   +
                 '" />\n';
-            intersectionElements += '<circle cx="' +
-            x + '" cy = "'  +
-            y + '" r = "'  +
-            (radius - 1)  +
-            '" stroke = "' +
-            color +
-            '" fill = "none"'   +
-                '" />\n';
-            intersectionElements += '<circle cx="' +
-            x + '" cy = "'  +
-            y + '" r = "'  +
-            radius  +
-            '" stroke = "' +
-            color +
-            '" fill = "none"'   +
-                '" />\n';
+            // intersectionElements += '<circle cx="' +
+            // x + '" cy = "'  +
+            // y + '" r = "'  +
+            // radius  +
+            // '" stroke = "' +
+            // color +
+            // '" fill = "none"'   +
+            //     '" />\n';
             break;
 
             case ('S'):
             case ('@'):
             case ('#'):
-            //FIXME: Draw square
-            intersectionElements += ''; //FIXME see php code
+            intersectionElements += '<rect x="' +
+                (x-radius/2+1) + '" y = "'  +
+                (y-radius/2+1) + '" width = "'  +
+                7  + '" height = "'  + 7 +
+            '" stroke = "' +
+            color +
+            '" fill = "none"'   +
+                '" />\n';
             break;
 
             case (','):
-            //FIXME: Draw hoshi as filled circle
-            intersectionElements += ''; //FIXME see php code            
+            intersectionElements += '<circle cx="' +
+            x + '" cy = "'  +
+            y + '" r = "'  +
+            3  +
+            '" stroke = "' +
+            color +
+            '" fill = "' + color   +
+            '" />\n';
         }
         return intersectionElements ;
     }
