@@ -713,8 +713,8 @@ class GoDiagram
 	var leftX = 6 + this.fontSize["w"];  
 	var img_y = 12 + this.fontSize["h"]+2 +
 		    this.radius - (this.fontSize["h"]/2);
-	for (var y = 0; y <= this.endrow-this.startrow; y++)
-	{   console.log("coordY is: ",coordY,"at beginning of loop");
+	for (var y = 0; y <= this.endrow-this.startrow-1; y++)
+	{
 	    var Xoffset = (coordY >= 10)
 	    	     ? this.fontSize["w"] : this.fontSize["w"]/2;
             svgElem = '<text x="' + (leftX - Xoffset) +
