@@ -387,6 +387,13 @@ class GoDiagram
         var textClass        = 'textClass';
         var coordClass       = 'coordClass';
 
+        // plus some default styles in case CSS classes are not present
+        // Text size in SVG behaves differently than in PHP's image
+        // Approximately half the height of our fontSize box is desired
+        // coordinates and auxiliary text. About 90% of the standard font for markup
+        var svgMarkupTextSize = 'style="font-size:' + (Math.floor(this.fontSize["h"]*0.9)).toString() + 'px"';
+        var svgDefaultTextSize = 'style="font-size:' + (this.fontSize["h"]/2).toString() + 'px"';
+
         // 5. Create the background
         imgSvg["background"] = '<rect  x="0" y="0" width="' + 
              this.imageWidth + '" height = "' + this.imageHeight +
@@ -395,7 +402,7 @@ class GoDiagram
         // 6. Draw the coordinates
         if (this.coordinates)
         {
-            imgSvg["coordinates"] = this.drawCoordinates(black, coordClass);
+            imgSvg["coordinates"] = this.drawCoordinates(black, coordClass, svgDefaultTextSize);
         }
         else
         {
@@ -482,7 +489,6 @@ class GoDiagram
                     break;
                     // any other markup (including & / ( ) ! etc.)
                     default:
-                    // FIXME: default clause still to finish
                     if (curchar % 2 == 1)   //odd numbers
                     {
                         svgItem += this.drawStone(elementX,elementY,black,oddcolor);
@@ -496,15 +502,27 @@ class GoDiagram
                     }
                     else if (curchar >= 'a' && curchar <= 'z')
                     {
-                    // FIXME: still to do see php code    
-                    //     type = this.getIntersectionType(xpos,ypos);
-                    //     svgItem += this.drawIntersection(,,black,type);
-
+                        type = this.getIntersectionType(xpos,ypos);
+                        svgItem += this.drawIntersection(elementX, elementY, black, type);
+                        var bkColor = (typeof this.linkmap[curchar] !== 'undefined' && this.linkmap[curchar] !== null) ?  link :   goban;
+                        this.markIntersection(elementX, elementY, this.radius+4, bkColor, "@" );
+                        markupColor = black;
+                        //font++   ??? Unclear what this does. font starts up set at this.fontsize, which was  2
                     }
-                    else // unknown character
-                    break;                    
+                    else
+                        // unknown character
+                        {break;}
+                    var xOffset = (curchar.length == 2) ? this.fontSize["w"] : this.fontSize["w"]/2 ;
+                    var yOffset = (this.fontSize["h"]/2 - 12.5 );
+                    svgItem += '<text x="' + (elementX-xOffset).toString() +
+                        '" y="' + (elementY - yOffset).toString() +
+                        '" fill="' + markupColor + '" class="' + markupClass +
+                        '" ' + svgMarkupTextSize + '>'+
+                        curchar+
+                        '</text>\n';
+                    break;
                 }    // end of switch curchar
-                console.log('this is the svgItem at x,y: ' + xpos + ', ' + ypos + '--> ' +  svgItem);
+//                console.log('this is the svgItem at x,y: ' + xpos + ', ' + ypos + '--> ' +  svgItem);
                 imgSvg['svgDiagram'] += svgItem;
                 console.log('this is the svgDiagram at x,y: ' + xpos + ', ' + ypos + '--> '   +  imgSvg['svgDiagram']);
             }        // end of xpos loop
@@ -657,15 +675,12 @@ class GoDiagram
         return intersectionElements;
     }
 
-    drawCoordinates(color, coordClass)
+    drawCoordinates(color, coordClass, SVGTextSize)
     // Returns one or more svg elements with the Goban coordinates
     {   var coordChars = 'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghjklmnopqrstuvwxyz123456789',
             coordY , coordX ,
             topRowSvgElems = '', leftColSvgElems = '',
             svgElem;        
-        // Text size in SVG behaves differently than in PHP's image
-        // Approximately half the height of our fontSize box is desired
-        var textSVGSize = 'style="font-size:' + (this.fontSize["h"]/2).toString() + 'px"';
   
         if (this.bottomborder)
         {
@@ -691,7 +706,7 @@ class GoDiagram
         // coordinate calculations according to offsets and sizes
         // in createSVG.  See createSVG for values
         
-        // Offset from left border. May have to be adjust for different fontsizes
+        // Offset from left border. May have to be adjusted for different fontsizes
 	var leftX = 6 + this.fontSize["w"];  
 	var img_y = 12 + this.fontSize["h"]+2 +
 		    this.radius - (this.fontSize["h"]/2);
@@ -699,10 +714,10 @@ class GoDiagram
 	{   console.log("coordY is: ",coordY,"at beginning of loop");
 	    var Xoffset = (coordY >= 10)
 	    	     ? this.fontSize["w"] : this.fontSize["w"]/2;
-	    svgElem = '<text x="' + (leftX - Xoffset) +
+            svgElem = '<text x="' + (leftX - Xoffset) +
                 '" y="' + img_y +
                 '" class="' + coordClass +
-                '" '+  textSVGSize + 
+                '" '+  SVGTextSize + 
                 '" color="' + color + '">'+ 
                 coordY.toString() +' </text>\n';
 	    img_y += (this.radius*2)+ 0.5;
@@ -717,7 +732,7 @@ class GoDiagram
 	{
 	    svgElem = '<text x="' + img_x +
                 '" y="' + topY + '" class="' + coordClass +
-                '" '+  textSVGSize + 
+                '" '+  SVGTextSize + 
                 ' color="' + color + '">'+ 
                  coordChars[coordX] +' </text>\n';
 	    img_x += this.radius*2;
