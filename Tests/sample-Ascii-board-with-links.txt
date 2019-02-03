@@ -1,11 +1,11 @@
 $$c Links in diagrams - examples
 $$  --------------
-$$ | . . . . . . .
+$$ | . . . . 1 . .
 $$ | . C . . . . .
-$$ | . . . X O . .
+$$ | 2 . . X O 4 .
 $$ | . . X O . . .
 $$ | . . X O . . .
-$$ | . . a . . C .
+$$ | 3 . a . . C .
 $$ | . . . . . . .
 $$ [2|NadareJoseki]
 $$ [a|http://gtl.xmp.net/members/info?p_key=349&pseudo=dada]
