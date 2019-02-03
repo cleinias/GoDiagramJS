@@ -505,6 +505,9 @@ class GoDiagram
                         type = this.getIntersectionType(xpos,ypos);
                         svgItem += this.drawIntersection(elementX, elementY, black, type);
                         var bkColor = (typeof this.linkmap[curchar] !== 'undefined' && this.linkmap[curchar] !== null) ?  link :   goban;
+                    // Draw a stone-sized circle under the letter to hide the intersection 
+                    svgItem += this.drawStone(elementX,elementY,goban,goban);
+                    // then draw the letter
                         this.markIntersection(elementX, elementY, this.radius+4, bkColor, "@" );
                         markupColor = black;
                         //font++   ??? Unclear what this does. font starts up set at this.fontsize, which was  2
