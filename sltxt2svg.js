@@ -309,44 +309,47 @@ class GoDiagram
     }
 
 
-    getLinkMap(mapName)
-    /** get HTML code for client side image map
-    * $URI ... URI of map
-    **/
-    {
-        var os = require("os");
- 	if (this.linkmap.length == 0)
-        {
- 	    return null;
-        }
- 	var html = "";
-        html += "<map name=" + mapName+ ">"+os.EOL;
- 	for (var ypos=this.startrow; ypos<=this.endrow; ypos++)
- 	{
- 	    for (var xpos=this.startcol; xpos<=this.endcol; xpos++)
- 	    {
- 		var curchar = this.rows[ypos][xpos];
- 		if (typeof this.linkmap[curchar] !== 'undefined' && this.linkmap[curchar] !== null)
- 		{
- 		    var coords =  this.getLinkArea(xpos, ypos);
- 		    var destination = this.linkmap[curchar];
- 		    var title = this.htmlspecialchars(destination);
- 		    html += ("<area shape='rect' coords='" + coords + "' href='" + destination + "' title='"+ title + "'>"+os.EOL);
- 		}
- 	    }
- 	}
- 	html += "</map>"+os.EOL;
- 	return html;
-    }
+    // getLinkMap(mapName)
+    // //FIXME: NOT NEEDED SINCE WE USE SVG's a element for hyperlinks, not maps
+    // /** get HTML code for client side image map
+    // * $URI ... URI of map
+    // **/
+    // {
+    //     var os = require("os");
+    //     if (this.linkmap.length == 0)
+    //     {
+    //         return null;
+    //     }
+    //     var html = "";
+    //     html += "<map name=" + mapName+ ">"+os.EOL;
+    //     for (var ypos=this.startrow; ypos<=this.endrow; ypos++)
+    //     {
+    //         for (var xpos=this.startcol; xpos<=this.endcol; xpos++)
+    //         {
+    //     	var curchar = this.rows[ypos][xpos];
+    //     	if (typeof this.linkmap[curchar] !== 'undefined' && this.linkmap[curchar] !== null)
+    //     	{
+    //     	    var coords =  this.getLinkArea(xpos, ypos);
+    //     	    var destination = this.linkmap[curchar];
+    //     	    var title = this.htmlspecialchars(destination);
+    //     	    html += ("<area shape='rect' coords='" + coords + "' href='" + destination + "' title='"+ title + "'>"+os.EOL);
+    //     	}
+    //         }
+    //     }
+    //     html += "</map>"+os.EOL;
+    //     this.html = html;
+    //     return html;
+    // }
 
 
-    getLinkArea(xpos, ypos)
-    // Return the origin and destination coordinates in pixel of the cell at xpos,ypos
-    {
- 	var x = (xpos - this.startcol)*(this.radius*2) + this.offset_x;
- 	var y = (ypos - this.startrow)*(this.radius*2) + this.offset_y;
- 	return [x, y, x + this.radius*2 - 1, y + this.radius*2 - 1];
-    }
+    // getLinkArea(xpos, ypos)
+    // // FIXME: NOT NEEDED since we are using SVG's a element for hyperlinks
+    // // Return the origin and destination coordinates in pixel of the cell at xpos,ypos
+    // {
+    //     var x = (xpos - this.startcol)*(this.radius*2) + this.offset_x;
+    //     var y = (ypos - this.startrow)*(this.radius*2) + this.offset_y;
+    //     return [x, y, x + this.radius*2 - 1, y + this.radius*2 - 1];
+    // }
 
 
     createSVG()
@@ -373,6 +376,7 @@ class GoDiagram
 	var gobanopen ="rgb(255, 210, 140)";
 	var link  ="rgb(202, 106, 69)";
         var markupColor = '';
+        var linkOpacity = 0.4 // Transparency of the linked areas on the goban 
 
         // 3. Setup the CSS classes for styling
 
@@ -444,10 +448,29 @@ class GoDiagram
                 // Get the character
                 var curchar = this.rows[ypos][xpos];
 
-                // TO DO, linked areas DIFFERENT FROM PHP CODE:
-		// // is this a linked area? if so,
-                // // change the color with link color
-		// if (isset($this->linkmap[$curchar]))
+                // FIXME: TODO
+		/** Is this a linked area? if so,
+                *   add a square colored with link color
+                *   to the link elements array
+                *   and wrap the it in an "a" element with
+                *   the proper anchor and link.
+                *
+                *   We are following SVG 2.0 rules and using href
+                *   instead of the xlink namespace.
+                *   See https://www.w3.org/TR/SVG2/linking.html#URLReference 
+                */
+		if  (typeof this.linkmap[curchar] !== 'undefined' &&
+                     this.linkmap[curchar] !== null)
+                {   
+                    imgSvg["links"] += '<a href="' + this.linkmap[curchar]+ '" >\n';
+                    imgSvg["links"] += '<rect x="' + (elementX - this.radius) +
+                        '" y="' + (elementY -this.radius) +
+                        '" width="' + (this.radius*2) +
+                        '" height="' +(this.radius*2) +
+                        '" stroke="'+ goban + '" fill="' + link +
+                        '" fill-opacity="' + linkOpacity +  '" />\n';
+                    imgSvg["links"] += '</a>\n';
+                }
 		// {
 		//    list($x, $y, $xx, $yy) = $this->_getLinkArea($xpos, $ypos);
 		//    ImageFilledRectangle($img, $x, $y, $xx, $yy, $link);
@@ -525,9 +548,7 @@ class GoDiagram
                         '</text>\n';
                     break;
                 }    // end of switch curchar
-//                console.log('this is the svgItem at x,y: ' + xpos + ', ' + ypos + '--> ' +  svgItem);
                 imgSvg['svgDiagram'] += svgItem;
-                console.log('this is the svgDiagram at x,y: ' + xpos + ', ' + ypos + '--> '   +  imgSvg['svgDiagram']);
             }        // end of xpos loop
         }            // end of ypos loop
 
@@ -535,6 +556,7 @@ class GoDiagram
         var svgElement = imgSvg["openSvgTag"] +
                          imgSvg["background"] +
                          imgSvg['svgDiagram'] +
+                         imgSvg["links"]      +
                          imgSvg['coordinates'] +
                          imgSvg["closeSvgTag"];
             
@@ -692,10 +714,7 @@ class GoDiagram
         else if (this.topborder)
         {
             coordY =  this.boardSize;
-            console.log("coordY: ", coordY, " this.boardSize: ", this.boardSize );
         }
-
-        console.log("coordY is: ", coordY, " after checks");
 
         if (this.leftborder)
         {
