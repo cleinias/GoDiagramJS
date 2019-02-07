@@ -779,3 +779,4 @@ class GoDiagram
     }
 }
 
+exports.GoDiagram = GoDiagram;
