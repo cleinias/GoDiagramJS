@@ -80,7 +80,9 @@
 * - create image with new GoDiagram(string) where string contains
 *   the diagram in Sensei Library's diagram format.
 *
-* - to get the SVG image call diagram.createSVG()
+* - to parse the ASCII diagram and get the SVG image call diagram.createSVG()
+*   If parsing has failed, an SVG image with an error message will be returned.
+*   If parsing was successful, an SVG image of the diagram will be returned. 
 *
 * - image size and width can be read from diagram.imageWidth and
 *   diagram.imageHeight
@@ -106,7 +108,27 @@
 
 class GoDiagram
 {
-/** //values extracted from the title line
+    constructor(input_diagram,fontSize={"h":16,"w":8})
+    /**
+    * Constructor of class GoDiagram
+    * input_diagram is the diagram in SL's diagram format
+    * 
+    * fontSize are the height and width in pixels of a box for 
+    * HTML latin2 standard fontsize 4. 
+    **/
+    {
+        this.fontSize = fontSize;
+        this.inputDiagram = input_diagram;
+        this.diagram = NULL;  //default value, overwritten if parsing succeeds
+        this.parseFailedMessage = ''; 
+    }
+
+    parseInput(){
+    /** 
+     Parse input (this.inputDiagram) into internal representation. 
+     Sets this.diagram to NULL if invalid diagram found
+
+     //values extracted from the title line
      firstColor;	// 'B' or 'W'
      coordinates;	// boolean
      boardSize;	        // integer
@@ -139,21 +161,11 @@ class GoDiagram
      bottomborder;
      leftborder;
      rightborder;
-**/
-
-    constructor(input_diagram,fontSize={"h":16,"w":8})
-    /**
-    * Constructor of class GoDiagram
-    * input_diagram is the diagram in SL's diagram format
-    * sets this.diagram to NULL if invalid diagram found
-    * 
-    * fontSize are the height and width in pixels of a box for 
-    * HTML latin2 standard fontsize 4. 
     **/
-    {
-        this.fontSize = fontSize;
+        try {
+        
         var match;
-	this.content = input_diagram.split("\n");
+	this.content = this.inputDiagram.split("\n");
 	// Parse the parameters of the first line
         
         match = this.content[0].trim().match(/^\$\$([WB])?(c)?(d+)?(.*)/);
@@ -195,7 +207,12 @@ class GoDiagram
 	||  this.imageWidth < this.fontSize["w"]
 	||  this.imageHeight < this.fontSize["h"])
 	{this.diagram = NULL;}
-    }
+        } 
+    catch(error) {
+        this.diagram = NULL;
+        this.parseFailedMessage = error;
+      }
+    }    //end of parse function
 
     /**
     * Parse diagram and calculate board dimensions
@@ -352,19 +369,39 @@ class GoDiagram
     // }
 
 
+    createSvgError(errorMessage,errorClass){
+        // Return an svgElement string with the error message
+        var svgError = '<svg width =\"100\" height = \"20\"' +
+                       'class =\"' + 
+                       errorClass +
+                       '\" >\n';
+        svgError +=  '<text x=\"15\" y=\"50\">'+
+            errorMessage +
+            '</text>\n';
+        svgError += '</svg>/n';
+        return svgError;
+    }
+    
     createSVG()
      /** Create the SVG image based on ASCII diagram
      * returns an SVG object (an XML text file)
      **/
     {
-        var imgSvg = {}; 
-        // 1. Create the SVG image element
-        imgSvg["openSvgTag"] = '<svg width = "'
-            + this.imageWidth
-            + '" height = "' +
-            this.imageHeight +
-            '">\n';
-        imgSvg["closeSvgTag"] = '</svg>\n';
+        //try to parse input diagram, create error SVG if failed
+        this.parseInput();
+        if (this.diagram === NULL) {  //parsing failed
+            return createSvgError(this.failedParseError, errorClass);
+        }
+        else {
+            // parsing succeeded --> create SVG diagram
+            var imgSvg = {}; 
+            // 1. Create the SVG image element
+            imgSvg["openSvgTag"] = '<svg width = "'
+                + this.imageWidth
+                + '" height = "' +
+                this.imageHeight +
+                '">\n';
+            imgSvg["closeSvgTag"] = '</svg>\n';
         
         // 2. Set up the default colors
         var black = "rgb(0, 0, 0)";
@@ -376,7 +413,7 @@ class GoDiagram
 	var gobanopen ="rgb(255, 210, 140)";
 	var link  ="rgb(202, 106, 69)";
         var markupColor = '';
-        var linkOpacity = 0.4 // Transparency of the linked areas on the goban 
+        var linkOpacity = 0.4; // Transparency of the linked areas on the goban 
 
         // 3. Setup the CSS classes for styling
 
@@ -390,6 +427,7 @@ class GoDiagram
         var oddColorClass    = 'oddColor';
         var textClass        = 'textClass';
         var coordClass       = 'coordClass';
+        var errorClass       = 'errorClass';
 
         // plus some default styles in case CSS classes are not present
         // Text size in SVG behaves differently than in PHP's image
@@ -561,6 +599,7 @@ class GoDiagram
                          imgSvg["closeSvgTag"];
             
         return svgElement;
+        }
     }
 
     drawStone(x, y, colorRing, colorInside)
