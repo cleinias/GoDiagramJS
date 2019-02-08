@@ -119,14 +119,14 @@ class GoDiagram
     {
         this.fontSize = fontSize;
         this.inputDiagram = input_diagram;
-        this.diagram = NULL;  //default value, overwritten if parsing succeeds
+        this.diagram = null;  //default value, overwritten if parsing succeeds
         this.parseFailedMessage = ''; 
     }
 
     parseInput(){
     /** 
      Parse input (this.inputDiagram) into internal representation. 
-     Sets this.diagram to NULL if invalid diagram found
+     Sets this.diagram to null if invalid diagram found
 
      //values extracted from the title line
      firstColor;	// 'B' or 'W'
@@ -163,7 +163,6 @@ class GoDiagram
      rightborder;
     **/
         try {
-        
         var match;
 	this.content = this.inputDiagram.split("\n");
 	// Parse the parameters of the first line
@@ -184,12 +183,12 @@ class GoDiagram
        for (var line of this.content.slice(1,))
  	{
             // Add NOT EMPTY line prefixed with $$ NOT containing bracketed links, discarding prefix
-            if (match = line.trim().match(/^\$\$\s*([^[\s].*)/))
+            if ((match = line.trim().match(/^\$\$\s*([^[\s].*)/)))
             {
                 this.diagram += (match[1] + "\n");
             }
              // Now looking for links and adding them to the map
-	    if (match = line.match(/^\$\$\s*\[(.*)\|(.*)\]/))
+	    if ((match = line.match(/^\$\$\s*\[(.*)\|(.*)\]/)))
  	    {
  	 	var anchor = match[1].trim();
  	 	if (anchor.match(/^[a-z0-9WB@#CS]$/))
@@ -206,11 +205,12 @@ class GoDiagram
 	||  this.endrow < 0 || this.endcol < 0
 	||  this.imageWidth < this.fontSize["w"]
 	||  this.imageHeight < this.fontSize["h"])
-	{this.diagram = NULL;}
+	    {this.diagram = null;
+            }
         } 
     catch(error) {
-        this.diagram = NULL;
-        this.parseFailedMessage = error;
+        this.diagram = null;
+        this.failureErrorMessage = 'Parsing of ASCII diagram failed';
       }
     }    //end of parse function
 
@@ -286,26 +286,26 @@ class GoDiagram
         this.offset_x = 2;
         this.offset_y = 2;
 
-        // adjust image size if coordinates are needed 
-         if (this.coordinates)
-         {
-             if ((this.bottomborder || this.topborder)
+        // adjust image size if coordinates are needed
+        if (this.coordinates)
+        {
+            if ((this.bottomborder || this.topborder)
                  &&
                  (this.leftborder || this.rightborder))
-             {
+            {
          	var x = this.fontSize["w"]*2+4;
          	var y = this.fontSize["h"]+2;
          	this.imageWidth += x;
          	this.offset_x += x;
          	this.imageHeight += y;
          	this.offset_y += y;
-             }
-             else {
-                // cannot determine X *and* Y coordinates (missing borders)
-                this.coordinates = 0;
-             }
-         }
-        }
+            }
+            else {
+               // cannot determine X *and* Y coordinates (missing borders)
+               this.coordinates = 0;
+            }            
+        }        
+    }
         
     htmlspecialchars(text)
     {
@@ -325,72 +325,42 @@ class GoDiagram
 	return this.htmlspecialchars(this.title);
     }
 
-
-    // getLinkMap(mapName)
-    // //FIXME: NOT NEEDED SINCE WE USE SVG's a element for hyperlinks, not maps
-    // /** get HTML code for client side image map
-    // * $URI ... URI of map
-    // **/
-    // {
-    //     var os = require("os");
-    //     if (this.linkmap.length == 0)
-    //     {
-    //         return null;
-    //     }
-    //     var html = "";
-    //     html += "<map name=" + mapName+ ">"+os.EOL;
-    //     for (var ypos=this.startrow; ypos<=this.endrow; ypos++)
-    //     {
-    //         for (var xpos=this.startcol; xpos<=this.endcol; xpos++)
-    //         {
-    //     	var curchar = this.rows[ypos][xpos];
-    //     	if (typeof this.linkmap[curchar] !== 'undefined' && this.linkmap[curchar] !== null)
-    //     	{
-    //     	    var coords =  this.getLinkArea(xpos, ypos);
-    //     	    var destination = this.linkmap[curchar];
-    //     	    var title = this.htmlspecialchars(destination);
-    //     	    html += ("<area shape='rect' coords='" + coords + "' href='" + destination + "' title='"+ title + "'>"+os.EOL);
-    //     	}
-    //         }
-    //     }
-    //     html += "</map>"+os.EOL;
-    //     this.html = html;
-    //     return html;
-    // }
-
-
-    // getLinkArea(xpos, ypos)
-    // // FIXME: NOT NEEDED since we are using SVG's a element for hyperlinks
-    // // Return the origin and destination coordinates in pixel of the cell at xpos,ypos
-    // {
-    //     var x = (xpos - this.startcol)*(this.radius*2) + this.offset_x;
-    //     var y = (ypos - this.startrow)*(this.radius*2) + this.offset_y;
-    //     return [x, y, x + this.radius*2 - 1, y + this.radius*2 - 1];
-    // }
-
-
-    createSvgError(errorMessage,errorClass){
+    createSvgErrorMessage(errorClass){
         // Return an svgElement string with the error message
-        var svgError = '<svg width =\"100\" height = \"20\"' +
-                       'class =\"' + 
-                       errorClass +
-                       '\" >\n';
-        svgError +=  '<text x=\"15\" y=\"50\">'+
-            errorMessage +
-            '</text>\n';
-        svgError += '</svg>/n';
+
+        // poor man text wrapping, still unsupported in SVG 1.1
+//        var splitMessage = this.failureErrorMessage.match(/(.{1,15})/g);
+        var splitMessage = this.failureErrorMessage.split();
+        var wPerL = 4; //words per line
+        var lines = Math.floor(splitMessage.length/wPerL);
+        if (splitMessage % wPerL !==0){
+            lines++;};
+        var svgError = '<svg xmlns="http://www.w3.org/2000/svg">\n';
+        svgError += '<g> \n ';
+        svgError += '<rect x="0" y="0" rx="20" ry="20" width="300" ';
+        svgError += 'height="' + (lines * 50).toString() +'" ';
+        svgError += ' fill="red" stroke="black"';
+        svgError += 'class=\"' + errorClass + '\" > </rect>\n';
+        svgError += '<text x="30" y="30" font-size="15" fill="black">\n';
+        for (var i = 0; i < lines; i++)
+        {
+            svgError += splitMessage.slice((i*wPerL), (i+1)*wPerL)+ '\n';
+        }
+        svgError += '</text>\n';
+        svgError += '</g>\n</svg>\n';
         return svgError;
     }
     
     createSVG()
      /** Create the SVG image based on ASCII diagram
-     * returns an SVG object (an XML text file)
+     *   returns an SVG object (an XML text file)
      **/
     {
-        //try to parse input diagram, create error SVG if failed
+        // parse input diagram, create error SVG if failed
         this.parseInput();
-        if (this.diagram === NULL) {  //parsing failed
-            return createSvgError(this.failedParseError, errorClass);
+        if (this.diagram === null) {  //parsing failed
+            this.failureErrorMessage = 'Parsing of ASCII diagram failed';
+            return this.createSvgErrorMessage(errorClass);
         }
         else {
             // parsing succeeded --> create SVG diagram
@@ -416,7 +386,6 @@ class GoDiagram
         var linkOpacity = 0.4; // Transparency of the linked areas on the goban 
 
         // 3. Setup the CSS classes for styling
-
         var blackStoneClass  = 'blackstone';
         var whiteStoneClass  = 'whitestone';
         var gobanClass       = 'goban';
